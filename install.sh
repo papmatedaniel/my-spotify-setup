@@ -3,28 +3,24 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "==> 1. Spotify előkészítése és engedélyek..."
-# Ha még nincs Spotify mappa vagy prefs, létrehozzuk, hogy a Spicetify ne dobjon hibát
+echo "==> 1. Könyvtárak és futtatási jogok előkészítése..."
 mkdir -p "$HOME/.config/spotify"
 touch "$HOME/.config/spotify/prefs"
 
-# Jogosultságok megadása a Spotify könyvtárnak (ha szükséges)
 if [ -d "/usr/share/spotify" ] && [ ! -w "/usr/share/spotify" ]; then
-    echo "Spotify mappa írási jogainak beállítása (sudo jelszót kérhet)..."
+    echo "Spotify mappa írási jogainak megadása (sudo szükséges lehet)..."
     sudo chmod a+wr /usr/share/spotify
     sudo chmod a+wr /usr/share/spotify/Apps -R
 fi
 
-echo "==> 2. Spicetify CLI ellenőrzése..."
+echo "==> 2. Spicetify CLI telepítése / ellenőrzése..."
 if ! command -v spicetify &> /dev/null; then
-    echo "Spicetify nincs telepítve, csendes automatikus letöltés..."
-    # A yes n kikerüli az interaktív Marketplace kérdést
-    yes n | curl -fsSL https://raw.githubusercontent.com/spicetify/cli/main/install.sh | sh
-    export PATH="$PATH:$HOME/.spicetify"
+    mkdir -p "$HOME/.spicetify"
+    curl -fsSL https://raw.githubusercontent.com/spicetify/cli/main/install.sh | sh -s -- --no-marketplace
 fi
+export PATH="$PATH:$HOME/.spicetify"
 
-echo "==> 3. Alap konfiguráció generálása..."
-# Előre beállítjuk a prefs és spotify útvonalat, hogy soha ne legyen detektálási hiba
+echo "==> 3. Alap konfiguráció ellenőrzése..."
 spicetify config prefs_path "$HOME/.config/spotify/prefs" || true
 if [ -d "/usr/share/spotify" ]; then
     spicetify config spotify_path "/usr/share/spotify" || true
@@ -37,11 +33,11 @@ mkdir -p "$HOME/.config/spicetify/Extensions"
 cp -r "$SCRIPT_DIR/CustomApps/lyrics-plus" "$HOME/.config/spicetify/CustomApps/"
 cp "$SCRIPT_DIR/Extensions/adblock.js" "$HOME/.config/spicetify/Extensions/"
 
-echo "==> 5. Spicetify beállítások felülírása..."
+echo "==> 5. Beállítások aktiválása..."
 spicetify config custom_apps lyrics-plus
 spicetify config extensions adblock.js
 
-echo "==> 6. Alkalmazás..."
-spicetify backup apply || spicetify apply
+echo "==> 6. Friss mentés készítése és alkalmazás..."
+spicetify backup apply
 
-echo "==> SIKER! A tiszta, reklámmentes, görgethető Spotify készen áll."
+echo "==> KÉSZ! A Spicetify, a görgethető Lyrics Plus és az Adblock sikeresen telepítve."
