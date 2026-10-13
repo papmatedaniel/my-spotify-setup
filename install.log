@@ -1,0 +1,11 @@
+[22:17:04 2026-10-13] FETCHING Version 2.45.3
+[22:17:04 2026-10-13] CREATING /home/pap/.spicetify
+[22:17:04 2026-10-13] DOWNLOADING https://github.com/spicetify/cli/releases/download/v2.45.3/spicetify-2.45.3-linux-amd64.tar.gz
+[22:17:07 2026-10-13] EXTRACTING /home/pap/.spicetify/spicetify.tar.gz
+[22:17:08 2026-10-13] SETTING EXECUTABLE PERMISSIONS TO /home/pap/.spicetify/spicetify
+[22:17:08 2026-10-13] REMOVING /home/pap/.spicetify/spicetify.tar.gz
+[22:17:08 2026-10-13] spicetify path already set in /home/pap/.bashrc, continuing...
+[22:17:08 2026-10-13] spicetify v2.45.3 was installed successfully to /home/pap/.spicetify
+[22:17:08 2026-10-13] Open a new terminal or reload your shell profile to use spicetify:
+[22:17:08 2026-10-13]   source "/home/pap/.bashrc"
+[22:17:08 2026-10-13] Then run 'spicetify --help' to get started
