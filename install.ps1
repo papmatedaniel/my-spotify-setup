@@ -1,5 +1,6 @@
 cd ~/my-spotify-setup
 
+# install.ps1 5. lépésének javítása $LASTEXITCODE vizsgálattal
 cat << 'EOF' > install.ps1
 $ErrorActionPreference = "Stop"
 
@@ -25,7 +26,6 @@ if (-not (Test-Path $PrefsFile)) {
 Write-Host "==> 2. Spicetify CLI ellenorzese..." -ForegroundColor Cyan
 if (-not (Get-Command "spicetify" -ErrorAction SilentlyContinue)) {
     Write-Host "Spicetify CLI letoltese..." -ForegroundColor Yellow
-    # Automatikus letöltés a Marketplace kérdés megkerülésével
     & ([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/spicetify/cli/main/install.ps1").Content)) -no-marketplace
     
     $SpicetifyBin = Join-Path $HOME "spicetify"
@@ -52,9 +52,9 @@ Write-Host "==> 5. Mentes es alkalmazas..." -ForegroundColor Cyan
 Get-Process -Name "Spotify" -ErrorAction SilentlyContinue | Stop-Process -Force
 Start-Sleep -Seconds 1
 
-try {
-    spicetify restore backup apply
-} catch {
+# Ha a restore backup apply elhasal (szűz telepítés), a backup apply-t futtatjuk
+spicetify restore backup apply
+if ($LASTEXITCODE -ne 0) {
     spicetify backup apply
 }
 
@@ -62,5 +62,5 @@ Write-Host "`n==> SIKER! A Spicetify, a gorgetheto Lyrics Plus es az Adblock tel
 EOF
 
 git add install.ps1
-git commit -m "Prevent admin execution and auto-skip marketplace on Windows"
+git commit -m "Fix Windows backup fallback logic using LASTEXITCODE"
 git push origin main
