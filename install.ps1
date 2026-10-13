@@ -1,4 +1,14 @@
+cd ~/my-spotify-setup
+
+cat << 'EOF' > install.ps1
 $ErrorActionPreference = "Stop"
+
+# Rendszergazda jogosultság ellenőrzése
+$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if ($isAdmin) {
+    Write-Error "HIBA: A Spicetify-t TILOS rendszergazdakent (Administrator) futtatni!`nNyiss egy NORMÁL PowerShell ablakot (sima felhasznalokent), es ugy futtasd a scriptet."
+    exit 1
+}
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $AppData = [Environment]::GetFolderPath("ApplicationData")
@@ -6,8 +16,6 @@ $SpicetifyDir = Join-Path $AppData "spicetify"
 $SpotifyDir = Join-Path $AppData "Spotify"
 
 Write-Host "==> 1. Spotify kornyezet ellenorzese..." -ForegroundColor Cyan
-
-# Prefs fájl előkészítése a detektálási hibák megelőzésére
 $PrefsFile = Join-Path $SpotifyDir "prefs"
 if (-not (Test-Path $PrefsFile)) {
     New-Item -Path $SpotifyDir -ItemType Directory -Force | Out-Null
@@ -16,8 +24,9 @@ if (-not (Test-Path $PrefsFile)) {
 
 Write-Host "==> 2. Spicetify CLI ellenorzese..." -ForegroundColor Cyan
 if (-not (Get-Command "spicetify" -ErrorAction SilentlyContinue)) {
-    Write-Host "Spicetify CLI nincs telepitve, automatikus letoltes..." -ForegroundColor Yellow
-    Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/spicetify/cli/main/install.ps1" | Invoke-Expression
+    Write-Host "Spicetify CLI letoltese..." -ForegroundColor Yellow
+    # Automatikus letöltés a Marketplace kérdés megkerülésével
+    & ([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing "https://raw.githubusercontent.com/spicetify/cli/main/install.ps1").Content)) -no-marketplace
     
     $SpicetifyBin = Join-Path $HOME "spicetify"
     if (Test-Path $SpicetifyBin) {
@@ -50,3 +59,8 @@ try {
 }
 
 Write-Host "`n==> SIKER! A Spicetify, a gorgetheto Lyrics Plus es az Adblock telepitve." -ForegroundColor Green
+EOF
+
+git add install.ps1
+git commit -m "Prevent admin execution and auto-skip marketplace on Windows"
+git push origin main
