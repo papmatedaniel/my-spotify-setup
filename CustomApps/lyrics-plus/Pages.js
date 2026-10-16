@@ -588,10 +588,18 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics, provider, copyright, isKa
 
 	const initialScroll = useRef(true);
 
-	// Reset scroll state when lyrics change
-	useEffect(() => {
-		initialScroll.current = true;
-	}, [lyrics]);
+    // Reset scroll state and jump to top immediately when track / lyrics change
+    useEffect(() => {
+        initialScroll.current = true;
+        if (pageRef.current) {
+            const scrollContainer = pageRef.current.closest('.os-viewport, .main-view-container__scroll-node, [data-overlayscrollbars-viewport]') || pageRef.current.parentElement;
+            if (scrollContainer) {
+                scrollContainer.scrollTop = 0;
+            } else {
+                pageRef.current.scrollIntoView({ behavior: 'instant', block: 'start' });
+            }
+        }
+    }, [lyrics]);
 
 	const lyricsId = lyrics[0].text;
 
@@ -610,6 +618,19 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics, provider, copyright, isKa
 	}
 
 	useEffect(() => {
+        // Keep container at the top during intro
+        if (activeLineIndex === 0) {
+            if (pageRef.current) {
+                const scrollContainer = pageRef.current.closest('.os-viewport, .main-view-container__scroll-node, [data-overlayscrollbars-viewport]') || pageRef.current.parentElement;
+                if (scrollContainer) {
+                    scrollContainer.scrollTop = 0;
+                } else {
+                    pageRef.current.scrollIntoView({ behavior: 'instant', block: 'start' });
+                }
+            }
+            return;
+        }
+
 		if (activeLineRef.current && (initialScroll.current || isInViewport(activeLineRef.current))) {
 			// Ignore focus on the first "empty" idling indicator if it's during initial load
 			if (initialScroll.current && activeLineIndex === 0) {
